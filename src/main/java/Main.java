@@ -1,16 +1,13 @@
 import DAO.UserDao;
 import DAO.UserDaoImpl;
-import entity.User;
-
-import java.io.*;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import service.Service;
+import service.ServiceImpl;
 
 public class Main {
     public static void main(String[] args) {
         UserDao userDao = new UserDaoImpl();
-        System.out.println(userDao.getAllUsers());
+        Service service = new ServiceImpl(userDao);
+        System.out.println(service.getAllUsers());
 
     }
 }

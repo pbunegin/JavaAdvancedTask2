@@ -16,7 +16,7 @@ public class UserDaoImpl implements UserDao{
     public UserDaoImpl() {
         users = new ArrayList<>();
         try {
-            Files.walkFileTree(Paths.get("C:\\Users\\petr_bunegin\\IdeaProjects\\JavaAdvancedTask2\\src\\main\\java\\accounts"),new SimpleFileVisitor<Path>(){
+            Files.walkFileTree(Paths.get("src\\main\\java\\accounts"),new SimpleFileVisitor<Path>(){
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs){
                     try (ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(file.toFile()))) {
