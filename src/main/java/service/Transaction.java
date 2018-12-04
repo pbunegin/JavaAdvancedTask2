@@ -15,26 +15,25 @@ public class Transaction implements Runnable {
 
     @Override
     public void run() {
+        transferFromUser.getLock().lock();
+        transferToUser.getLock().lock();
         try {
-            if (transferFromUser.getLock().tryLock()){
-                if (transferToUser.getLock().tryLock()){
-                    transfer(transferFromUser, transferToUser, sum);
-                }
-            }
+            transfer(transferFromUser, transferToUser, sum);
         } finally {
             transferFromUser.getLock().unlock();
             transferToUser.getLock().unlock();
         }
     }
 
-    private void transfer(User user1, User user2, long sum) {
-        if (user1.getBalance() - sum < 0) {
-            System.out.printf("Не достаточно средств на счете %d пользователя %s\n", user1.getId(), user1.getName());
+    private void transfer(User transferFromUser, User transferToUser, long sum) {
+        if (transferFromUser.getBalance() - sum < 0) {
+            System.out.printf("\nНе достаточно средств на счете %d пользователя %s", transferFromUser.getId(), transferFromUser.getName());
             return;
         }
-        user1.setBalance(user1.getBalance() - sum);
-        user1.setBalance(user1.getBalance() + sum);
-        System.out.printf("Успешная транзакция! Остаток на счете %d пользователя %s: %d\n", user1.getId(), user1.getName(),user1.getBalance());
-        System.out.printf("Успешная транзакция! Остаток на счете %d пользователя %s: %d\n", user2.getId(), user2.getName(),user2.getBalance());
+        transferFromUser.setBalance(transferFromUser.getBalance() - sum);
+        transferToUser.setBalance(transferToUser.getBalance() + sum);
+        System.out.printf("\nУспешный перевод от пользователя %s пользователю %s!", transferFromUser.getName(),transferToUser.getName());
+        System.out.printf("\nОстаток на счете %d пользователя %s: %d", transferFromUser.getId(), transferFromUser.getName(),transferFromUser.getBalance());
+        System.out.printf("\nОстаток на счете %d пользователя %s: %d", transferToUser.getId(), transferToUser.getName(),transferToUser.getBalance());
     }
 }

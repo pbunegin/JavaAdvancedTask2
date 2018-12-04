@@ -10,7 +10,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Main {
-    private final static String pathAccount = "src\\main\\java\\accounts";
+    private final static String pathAccount = "src\\main\\java\\accounts\\";
 
     public static void main(String[] args) {
         UserDao userDao = new UserDaoImpl(pathAccount);
@@ -21,9 +21,11 @@ public class Main {
             System.out.println(user);
         }
 
-        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        ExecutorService executorService = Executors.newFixedThreadPool(100);
         for(int i = 0; i < 1000; i++) {
-            executorService.submit(new Transaction(service.getRandomUser(),service.getRandomUser(), (long) (Math.random()*2000+1)));
+            long sum = (long) (Math.random() * 500 + 1);
+            Transaction task = new Transaction(service.getRandomUser(30), service.getRandomUser(30), sum);
+            executorService.submit(task);
         }
         executorService.shutdown();
     }

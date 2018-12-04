@@ -11,5 +11,5 @@ public interface Service {
     void createUser(int id, String name, long balance);
     void deleteUser(int id);
     void createUsers(List<User> users);
-    User getRandomUser();
+    User getRandomUser(int maxId);
 }

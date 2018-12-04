@@ -49,7 +49,7 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public User getRandomUser() {
-        return getUserById((int) (Math.random()*30));
+    public User getRandomUser(int maxId) {
+        return getUserById((int) (Math.random()*maxId));
     }
 }

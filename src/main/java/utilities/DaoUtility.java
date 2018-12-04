@@ -26,13 +26,9 @@ public class DaoUtility {
     public List<User> getAllUser() {
         List<User> users = new ArrayList<>();
         try {
-            Files.walkFileTree(Paths.get(pathAccount), new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                    users.add(getUserByFile(file));
-                    return FileVisitResult.CONTINUE;
-                }
-            });
+            Files.walk(Paths.get(pathAccount), 1)
+                    .filter(path -> Files.isRegularFile(path))
+                    .forEach(file -> users.add(getUserByFile(file)));
         } catch (IOException e) {
             System.out.println("Ошибка при попытке получить всех пользователей: " + e.getMessage());
         }
