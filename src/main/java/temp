@@ -1,4 +1,6 @@
-List<User> users = new ArrayList<>();
+
+        List<User> users = new ArrayList<>();
+        users.add(new User(0,"Жора", 1200));
         users.add(new User(1,"Вася", 1500));
         users.add(new User(2,"Саша", 1520));
         users.add(new User(3,"Гриша",1480));
@@ -30,12 +32,4 @@ List<User> users = new ArrayList<>();
         users.add(new User(29,"Валя",7700));
         users.add(new User(30,"Юра",100));
         users.add(new User(31,"Локи",700));
-        for (int i = 0; i < users.size(); i++) {
-        try(ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream("C:\\Users\\petr_bunegin\\IdeaProjects\\JavaAdvancedTask2\\src\\main\\java\\accounts\\user"+i))) {
-            objectOutputStream.writeObject(users.get(i));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        }
+        service.createUsers(users);

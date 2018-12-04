@@ -10,4 +10,6 @@ public interface Service {
     User getUserByName(String name);
     void createUser(int id, String name, long balance);
     void deleteUser(int id);
+    void createUsers(List<User> users);
+    User getRandomUser();
 }
