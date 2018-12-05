@@ -1,16 +1,18 @@
 package utilities;
 
 import entity.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DaoUtility {
     private static DaoUtility daoUtility;
     private String pathAccount;
+    private Logger logger = LoggerFactory.getLogger(DaoUtility.class);
 
     private DaoUtility(String pathAccount) {
         this.pathAccount = pathAccount;
@@ -30,7 +32,7 @@ public class DaoUtility {
                     .filter(path -> Files.isRegularFile(path))
                     .forEach(file -> users.add(getUserByFile(file)));
         } catch (IOException e) {
-            System.out.println("Ошибка при попытке получить всех пользователей: " + e.getMessage());
+            logger.error("Ошибка при попытке получить всех пользователей: " + e.getMessage());
         }
         return users;
     }
@@ -40,7 +42,7 @@ public class DaoUtility {
         try (ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(file.toFile()))) {
             user = (User) objectInputStream.readObject();
         } catch (IOException | ClassNotFoundException e) {
-            System.out.println("Ошибка при попытке получить пользователя: " + e.getMessage());
+            logger.error("Ошибка при попытке получить пользователя: " + e.getMessage());
         }
         return user;
     }
@@ -54,7 +56,7 @@ public class DaoUtility {
         try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream(pathAccount + "\\" + user.getId()))) {
             objectOutputStream.writeObject(user);
         } catch (IOException e) {
-            System.out.println("Ошибка записи в файл при попытке создания/обновления пользователя: " + e.getMessage());
+            logger.error("Ошибка записи в файл при попытке создания/обновления пользователя: " + e.getMessage());
         }
     }
 
@@ -62,9 +64,9 @@ public class DaoUtility {
         try {
             Files.delete(Paths.get(pathAccount + "\\" + id));
         } catch (NoSuchFileException e) {
-            System.out.println("Ошибка при попытке удалить файл. Файл не существует. " + e.getMessage());
+            logger.error("Ошибка при попытке удалить файл. Файл не существует. - " + e.getMessage());
         } catch (IOException e) {
-            System.out.println("Ошибка при попытке удалить файл: " + e.getMessage());
+            logger.error("Ошибка при попытке удалить файл: " + e.getMessage());
         }
     }
 }
