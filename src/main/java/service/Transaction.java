@@ -1,11 +1,17 @@
 package service;
 
 import entity.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.locks.Lock;
 
 public class Transaction implements Runnable {
     private User transferFromUser;
     private User transferToUser;
     private long sum;
+    private Logger logger = LoggerFactory.getLogger(Transaction.class);
+
 
     public Transaction(User transferFromUser, User transferToUser, long sum) {
         this.transferFromUser = transferFromUser;
@@ -15,25 +21,40 @@ public class Transaction implements Runnable {
 
     @Override
     public void run() {
-        transferFromUser.getLock().lock();
-        transferToUser.getLock().lock();
+        int id1 = transferFromUser.getId();
+        int id2 = transferToUser.getId();
+        Lock lock1 = transferFromUser.getLock();
+        Lock lock2 = transferToUser.getLock();
+        if (id1 == id2) {
+            logger.warn("Невозможно выполнить перевод самому себе");
+            return;
+        } else if (id1 < id2) {
+            Lock tempLock = lock1;
+            lock1 = lock2;
+            lock2 = tempLock;
+        }
+
+        lock1.lock();
+        lock2.lock();
         try {
             transfer(transferFromUser, transferToUser, sum);
         } finally {
-            transferFromUser.getLock().unlock();
-            transferToUser.getLock().unlock();
+            lock1.unlock();
+            lock2.unlock();
         }
     }
 
     private void transfer(User transferFromUser, User transferToUser, long sum) {
         if (transferFromUser.getBalance() - sum < 0) {
-            System.out.printf("\nНе достаточно средств на счете %d пользователя %s", transferFromUser.getId(), transferFromUser.getName());
+            logger.warn("Не достаточно средств на счете {} пользователя {}", transferFromUser.getId(), transferFromUser.getName());
             return;
         }
         transferFromUser.setBalance(transferFromUser.getBalance() - sum);
         transferToUser.setBalance(transferToUser.getBalance() + sum);
-        System.out.printf("\nУспешный перевод от пользователя %s пользователю %s!", transferFromUser.getName(),transferToUser.getName());
-        System.out.printf("\nОстаток на счете %d пользователя %s: %d", transferFromUser.getId(), transferFromUser.getName(),transferFromUser.getBalance());
-        System.out.printf("\nОстаток на счете %d пользователя %s: %d", transferToUser.getId(), transferToUser.getName(),transferToUser.getBalance());
+        logger.info("Успешный перевод на сумму {} от пользователя {} пользователю {}!\n" +
+                "Остаток на счете {} пользователя {}: {}\n" +
+                "Остаток на счете {} пользователя {}: {}", sum, transferFromUser.getName(), transferToUser.getName(),
+                transferFromUser.getId(), transferFromUser.getName(), transferFromUser.getBalance(),
+                transferToUser.getId(), transferToUser.getName(), transferToUser.getBalance());
     }
 }
