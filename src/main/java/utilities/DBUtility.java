@@ -9,20 +9,20 @@ import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DaoUtility {
-    private static DaoUtility daoUtility;
+public class DBUtility {
+    private static DBUtility DBUtility;
     private String pathAccount;
-    private Logger logger = LoggerFactory.getLogger(DaoUtility.class);
+    private Logger logger = LoggerFactory.getLogger(DBUtility.class);
 
-    private DaoUtility(String pathAccount) {
+    private DBUtility(String pathAccount) {
         this.pathAccount = pathAccount;
     }
 
-    public static DaoUtility getInstance(String pathAccount) {
-        if (daoUtility == null) {
-            daoUtility = new DaoUtility(pathAccount);
+    public static DBUtility getInstance(String pathAccount) {
+        if (DBUtility == null) {
+            DBUtility = new DBUtility(pathAccount);
         }
-        return daoUtility;
+        return DBUtility;
     }
 
     public List<User> getAllUser() {

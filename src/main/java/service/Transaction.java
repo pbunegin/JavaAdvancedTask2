@@ -7,54 +7,70 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.locks.Lock;
 
 public class Transaction implements Runnable {
+    private Service service;
     private User transferFromUser;
     private User transferToUser;
     private long sum;
     private Logger logger = LoggerFactory.getLogger(Transaction.class);
 
-
-    public Transaction(User transferFromUser, User transferToUser, long sum) {
-        this.transferFromUser = transferFromUser;
-        this.transferToUser = transferToUser;
-        this.sum = sum;
+    public Transaction(Service service) {
+        this.service = service;
     }
 
     @Override
     public void run() {
-        int id1 = transferFromUser.getId();
-        int id2 = transferToUser.getId();
-        Lock lock1 = transferFromUser.getLock();
-        Lock lock2 = transferToUser.getLock();
-        if (id1 == id2) {
-            logger.warn("Невозможно выполнить перевод самому себе");
-            return;
-        } else if (id1 < id2) {
-            Lock tempLock = lock1;
-            lock1 = lock2;
-            lock2 = tempLock;
-        }
+        while (service.getCountTransaction() < ServiceImpl.MAX_TRANSACTION) {
+            getUsersAndSum();
+            if (!check()) {
+                service.decrementCountTransaction();
+                continue;
+            }
+            Lock lock1 = transferFromUser.getLock();
+            Lock lock2 = transferToUser.getLock();
+            if (transferFromUser.getId() < transferToUser.getId()) {
+                Lock tempLock = lock1;
+                lock1 = lock2;
+                lock2 = tempLock;
+            }
 
-        lock1.lock();
-        lock2.lock();
-        try {
-            transfer(transferFromUser, transferToUser, sum);
-        } finally {
-            lock1.unlock();
-            lock2.unlock();
+            lock1.lock();
+            lock2.lock();
+            try {
+                transfer();
+            } finally {
+                lock1.unlock();
+                lock2.unlock();
+            }
         }
     }
 
-    private void transfer(User transferFromUser, User transferToUser, long sum) {
+    private boolean check() {
+        if (transferFromUser == null || transferToUser == null){
+//            logger.warn("Пользователь не существует");
+            return false;
+        }
         if (transferFromUser.getBalance() - sum < 0) {
             logger.warn("Не достаточно средств на счете {} пользователя {}", transferFromUser.getId(), transferFromUser.getName());
-            return;
+            return false;
         }
+        if (transferFromUser.getId() == transferToUser.getId()) {
+            logger.warn("Невозможно выполнить перевод самому себе");
+            return false;
+        }
+        return true;
+    }
+
+    private void getUsersAndSum() {
+        sum = (long) (Math.random() * 2000 + 1);
+        transferFromUser = service.getRandomUser(33);
+        transferToUser = service.getRandomUser(33);
+    }
+
+    private void transfer() {
         transferFromUser.setBalance(transferFromUser.getBalance() - sum);
         transferToUser.setBalance(transferToUser.getBalance() + sum);
-        logger.info("Успешный перевод на сумму {} от пользователя {} пользователю {}!\n" +
-                "Остаток на счете {} пользователя {}: {}\n" +
-                "Остаток на счете {} пользователя {}: {}", sum, transferFromUser.getName(), transferToUser.getName(),
-                transferFromUser.getId(), transferFromUser.getName(), transferFromUser.getBalance(),
-                transferToUser.getId(), transferToUser.getName(), transferToUser.getBalance());
+        logger.info("Успешный перевод на сумму {} от {} к {}! Остаток: {}-{}, {}-{}",
+                sum, transferFromUser.getName(), transferToUser.getName(),
+                transferFromUser.getName(), transferFromUser.getBalance(), transferToUser.getName(), transferToUser.getBalance());
     }
 }

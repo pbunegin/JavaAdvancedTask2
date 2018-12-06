@@ -12,4 +12,6 @@ public interface Service {
     void deleteUser(int id);
     void createUsers(List<User> users);
     User getRandomUser(int maxId);
+    int getCountTransaction();
+    void decrementCountTransaction();
 }

@@ -1,34 +1,34 @@
 package DAO;
 
 import entity.User;
-import utilities.DaoUtility;
+import utilities.DBUtility;
 
 import java.util.List;
 
 public class UserDaoImpl implements UserDao{
-    private DaoUtility daoUtility;
+    private DBUtility DBUtility;
 
     public UserDaoImpl(String pathAccount) {
-        daoUtility = DaoUtility.getInstance(pathAccount);
+        DBUtility = DBUtility.getInstance(pathAccount);
     }
 
     @Override
     public List<User> getAllUsers() {
-        return daoUtility.getAllUser();
+        return DBUtility.getAllUser();
     }
 
     @Override
     public User getUser(int id) {
-        return daoUtility.getUserById(id);
+        return DBUtility.getUserById(id);
     }
 
     @Override
     public void createOrUpdateUser(User user) {
-        daoUtility.createOrUpdateUser(user);
+        DBUtility.createOrUpdateUser(user);
     }
 
     @Override
     public void deleteUser(int id) {
-        daoUtility.deleteUser(id);
+        DBUtility.deleteUser(id);
     }
 }

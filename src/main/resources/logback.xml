@@ -4,7 +4,7 @@
         <file>src\main\java\log\testFile.log</file>
         <append>false</append>
         <encoder>
-            <pattern>%d{dd MMM yyyy HH:mm:ss.SSS} %-5level [%thread] - [%logger]- %msg%n</pattern>
+            <pattern>%d{dd MMM yyyy HH:mm:ss.SSS} %-5level [%-16thread] - [%logger]- %msg%n</pattern>
         </encoder>
     </appender>
 
