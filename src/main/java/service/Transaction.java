@@ -20,11 +20,11 @@ public class Transaction implements Runnable {
     @Override
     public void run() {
         while (service.getCountTransaction() < ServiceImpl.MAX_TRANSACTION) {
-            getUsersAndSum();
-            if (!check()) {
-                service.decrementCountTransaction();
-                continue;
-            }
+//            try {
+//                Thread.sleep(100);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
             Lock lock1 = transferFromUser.getLock();
             Lock lock2 = transferToUser.getLock();
             if (transferFromUser.getId() < transferToUser.getId()) {
@@ -36,6 +36,11 @@ public class Transaction implements Runnable {
             lock1.lock();
             lock2.lock();
             try {
+                getUsersAndSum();
+                if (!check()) {
+                    service.decrementCountTransaction();
+                    continue;
+                }
                 transfer();
             } finally {
                 lock1.unlock();
@@ -50,7 +55,7 @@ public class Transaction implements Runnable {
             return false;
         }
         if (transferFromUser.getBalance() - sum < 0) {
-            logger.warn("Не достаточно средств на счете {} пользователя {}", transferFromUser.getId(), transferFromUser.getName());
+            logger.warn("Не достаточно средств на счете {} пользователя {}--есть{}--{}", transferFromUser.getId(), transferFromUser.getName(),transferFromUser.getBalance(),sum);
             return false;
         }
         if (transferFromUser.getId() == transferToUser.getId()) {

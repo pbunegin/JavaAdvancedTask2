@@ -5,10 +5,12 @@ import DAO.UserDaoImpl;
 import entity.User;
 
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ServiceImpl implements Service {
     public static final int MAX_TRANSACTION = 1000;
+    private static final Random RANDOM = new Random();
     private UserDao userDao;
     private List<User> users;
     private static AtomicInteger countTransaction = new AtomicInteger(0);
@@ -66,7 +68,7 @@ public class ServiceImpl implements Service {
 
     @Override
     public User getRandomUser(int maxId) {
-        int num = (int) (Math.random() * maxId);
+        int num = RANDOM.nextInt(maxId);
         return getUserById(num);
     }
 }
