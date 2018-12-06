@@ -12,7 +12,7 @@ import java.util.List;
 public class DBUtility {
     private static DBUtility DBUtility;
     private String pathAccount;
-    private Logger logger = LoggerFactory.getLogger(DBUtility.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DBUtility.class);
 
     private DBUtility(String pathAccount) {
         this.pathAccount = pathAccount;
@@ -32,7 +32,7 @@ public class DBUtility {
                     .filter(path -> Files.isRegularFile(path))
                     .forEach(file -> users.add(getUserByFile(file)));
         } catch (IOException e) {
-            logger.error("Ошибка при попытке получить всех пользователей: " + e.getMessage());
+            LOGGER.error("Ошибка при попытке получить всех пользователей: " + e.getMessage());
         }
         return users;
     }
@@ -42,7 +42,7 @@ public class DBUtility {
         try (ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(file.toFile()))) {
             user = (User) objectInputStream.readObject();
         } catch (IOException | ClassNotFoundException e) {
-            logger.error("Ошибка при попытке получить пользователя: " + e.getMessage());
+            LOGGER.error("Ошибка при попытке получить пользователя: {}", e.getMessage());
         }
         return user;
     }
@@ -51,12 +51,11 @@ public class DBUtility {
         return getUserByFile(Paths.get(pathAccount + "\\" + id));
     }
 
-
     public void createOrUpdateUser(User user) {
         try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream(pathAccount + "\\" + user.getId()))) {
             objectOutputStream.writeObject(user);
         } catch (IOException e) {
-            logger.error("Ошибка записи в файл при попытке создания/обновления пользователя: " + e.getMessage());
+            LOGGER.error("Ошибка записи в файл при попытке создания/обновления пользователя: {}", e.getMessage());
         }
     }
 
@@ -64,9 +63,9 @@ public class DBUtility {
         try {
             Files.delete(Paths.get(pathAccount + "\\" + id));
         } catch (NoSuchFileException e) {
-            logger.error("Ошибка при попытке удалить файл. Файл не существует. - " + e.getMessage());
+            LOGGER.error("Ошибка при попытке удалить файл. Файл не существует. - {}", e.getMessage());
         } catch (IOException e) {
-            logger.error("Ошибка при попытке удалить файл: " + e.getMessage());
+            LOGGER.error("Ошибка при попытке удалить файл: {}", e.getMessage());
         }
     }
 }

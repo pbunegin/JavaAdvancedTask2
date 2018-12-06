@@ -4,16 +4,20 @@ import DAO.UserDao;
 import DAO.UserDaoImpl;
 import entity.User;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public class ServiceImpl implements Service {
-    public static final int MAX_TRANSACTION = 1000;
     private static final Random RANDOM = new Random();
     private UserDao userDao;
     private List<User> users;
-    private static AtomicInteger countTransaction = new AtomicInteger(0);
+    private AtomicInteger countTransaction = new AtomicInteger(0);
 
     public ServiceImpl(String pathAccount) {
         this.userDao = new UserDaoImpl(pathAccount);
@@ -32,6 +36,9 @@ public class ServiceImpl implements Service {
         User user = users.stream().filter(e->e.getId()==id).findAny().orElse(null);
         if (user == null) {
             user = userDao.getUser(id);
+            if (user != null){
+                users.add(user);
+            }
         }
         return user;
     }
@@ -42,12 +49,16 @@ public class ServiceImpl implements Service {
     }
 
     @Override
-    public void createUser(int id, String name, long balance) {
-        userDao.createOrUpdateUser(new User(id,name,balance));
+    public void createOrUpdateUser(int id, String name, long balance) {
+        User user = new User(id, name, balance);
+        userDao.createOrUpdateUser(user);
+        //обновить users
+        getUserById(id);
     }
 
     @Override
     public void deleteUser(int id) {
+        users = users.stream().filter(e->e.getId()!=id).collect(Collectors.toList());
         userDao.deleteUser(id);
     }
 
@@ -58,17 +69,31 @@ public class ServiceImpl implements Service {
         }
     }
 
+    @Override
     public int getCountTransaction() {
         return countTransaction.getAndIncrement();
     }
 
+    @Override
     public void decrementCountTransaction(){
         countTransaction.decrementAndGet();
     }
 
     @Override
-    public User getRandomUser(int maxId) {
-        int num = RANDOM.nextInt(maxId);
+    public List<User> createRandomUsers(int maxNumberUsers) throws IOException {
+        List<String> stringNames = Files.readAllLines(Paths.get("src\\main\\java\\service\\names.txt"));
+        Collections.shuffle(stringNames);
+        users.clear();
+        for (int i = 0; i < maxNumberUsers; i++) {
+            users.add(new User(i,stringNames.get(i),RANDOM.nextInt(10000)));
+        }
+        createUsers(users);
+        return users;
+    }
+
+    @Override
+    public User getRandomUser() {
+        int num = RANDOM.nextInt(users.size()+2);
         return getUserById(num);
     }
 }

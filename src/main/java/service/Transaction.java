@@ -8,23 +8,25 @@ import java.util.concurrent.locks.Lock;
 
 public class Transaction implements Runnable {
     private Service service;
+    private int maxNumberTransactions;
     private User transferFromUser;
     private User transferToUser;
     private long sum;
-    private Logger logger = LoggerFactory.getLogger(Transaction.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Transaction.class);
 
-    public Transaction(Service service) {
+    public Transaction(Service service, int maxNumberTransactions) {
         this.service = service;
+        this.maxNumberTransactions = maxNumberTransactions;
     }
 
     @Override
     public void run() {
-        while (service.getCountTransaction() < ServiceImpl.MAX_TRANSACTION) {
-//            try {
-//                Thread.sleep(100);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
+        while (service.getCountTransaction() < maxNumberTransactions) {
+            getUsersAndSum();
+            if (transferFromUser == null || transferToUser == null) {
+                service.decrementCountTransaction();
+                continue;
+            }
             Lock lock1 = transferFromUser.getLock();
             Lock lock2 = transferToUser.getLock();
             if (transferFromUser.getId() < transferToUser.getId()) {
@@ -32,16 +34,14 @@ public class Transaction implements Runnable {
                 lock1 = lock2;
                 lock2 = tempLock;
             }
-
             lock1.lock();
             lock2.lock();
             try {
-                getUsersAndSum();
-                if (!check()) {
+                if (checkTransaction()) {
+                    transfer();
+                } else {
                     service.decrementCountTransaction();
-                    continue;
                 }
-                transfer();
             } finally {
                 lock1.unlock();
                 lock2.unlock();
@@ -49,17 +49,14 @@ public class Transaction implements Runnable {
         }
     }
 
-    private boolean check() {
-        if (transferFromUser == null || transferToUser == null){
-//            logger.warn("Пользователь не существует");
-            return false;
-        }
+    private boolean checkTransaction() {
         if (transferFromUser.getBalance() - sum < 0) {
-            logger.warn("Не достаточно средств на счете {} пользователя {}--есть{}--{}", transferFromUser.getId(), transferFromUser.getName(),transferFromUser.getBalance(),sum);
+            LOGGER.warn("Недостаточно средств на счете {} пользователя {}", transferFromUser.getId(), transferFromUser.getName());
             return false;
         }
         if (transferFromUser.getId() == transferToUser.getId()) {
-            logger.warn("Невозможно выполнить перевод самому себе");
+            LOGGER.warn("Невозможно выполнить перевод самому себе. Счет {}, пользователь {}",
+                    transferFromUser.getId(), transferFromUser.getName());
             return false;
         }
         return true;
@@ -67,14 +64,14 @@ public class Transaction implements Runnable {
 
     private void getUsersAndSum() {
         sum = (long) (Math.random() * 2000 + 1);
-        transferFromUser = service.getRandomUser(33);
-        transferToUser = service.getRandomUser(33);
+        transferFromUser = service.getRandomUser();
+        transferToUser = service.getRandomUser();
     }
 
     private void transfer() {
         transferFromUser.setBalance(transferFromUser.getBalance() - sum);
         transferToUser.setBalance(transferToUser.getBalance() + sum);
-        logger.info("Успешный перевод на сумму {} от {} к {}! Остаток: {}-{}, {}-{}",
+        LOGGER.info("Успешный перевод на сумму {} от {} к {}! Остаток: {}-{}, {}-{}",
                 sum, transferFromUser.getName(), transferToUser.getName(),
                 transferFromUser.getName(), transferFromUser.getBalance(), transferToUser.getName(), transferToUser.getBalance());
     }

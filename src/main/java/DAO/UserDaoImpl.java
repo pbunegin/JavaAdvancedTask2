@@ -6,29 +6,29 @@ import utilities.DBUtility;
 import java.util.List;
 
 public class UserDaoImpl implements UserDao{
-    private DBUtility DBUtility;
+    private DBUtility dbUtility;
 
     public UserDaoImpl(String pathAccount) {
-        DBUtility = DBUtility.getInstance(pathAccount);
+        this.dbUtility = DBUtility.getInstance(pathAccount);
     }
 
     @Override
     public List<User> getAllUsers() {
-        return DBUtility.getAllUser();
+        return dbUtility.getAllUser();
     }
 
     @Override
     public User getUser(int id) {
-        return DBUtility.getUserById(id);
+        return dbUtility.getUserById(id);
     }
 
     @Override
     public void createOrUpdateUser(User user) {
-        DBUtility.createOrUpdateUser(user);
+        dbUtility.createOrUpdateUser(user);
     }
 
     @Override
     public void deleteUser(int id) {
-        DBUtility.deleteUser(id);
+        dbUtility.deleteUser(id);
     }
 }
