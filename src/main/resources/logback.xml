@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
@@ -7,6 +8,16 @@
             <pattern>%d{dd MMM yyyy HH:mm:ss.SSS} %-5level [%thread] - [%logger] - %msg%n</pattern>
         </encoder>
     </appender>
+
+    <appender name="sout" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <Pattern>%d{dd MMM yyyy HH:mm:ss.SSS} %-5level [%thread] - [%logger] - %msg%n</Pattern>
+        </encoder>
+    </appender>
+
+    <logger name="Main" level="info" >
+        <appender-ref ref="sout" />
+    </logger>
 
     <root level="DEBUG">
         <appender-ref ref="FILE" />
