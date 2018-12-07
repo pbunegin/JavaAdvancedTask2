@@ -15,6 +15,8 @@ import java.util.stream.Collectors;
 
 public class ServiceImpl implements Service {
     private static final Random RANDOM = new Random();
+    private static final String PATH_ALL_NAMES = "src\\main\\java\\service\\names.txt";
+    private static final int MAX_BALANCE = 10000;
     private UserDao userDao;
     private List<User> users;
     private AtomicInteger countTransaction = new AtomicInteger(0);
@@ -81,11 +83,11 @@ public class ServiceImpl implements Service {
 
     @Override
     public List<User> createRandomUsers(int maxNumberUsers) throws IOException {
-        List<String> stringNames = Files.readAllLines(Paths.get("src\\main\\java\\service\\names.txt"));
+        List<String> stringNames = Files.readAllLines(Paths.get(PATH_ALL_NAMES));
         Collections.shuffle(stringNames);
         users.clear();
         for (int i = 0; i < maxNumberUsers; i++) {
-            users.add(new User(i,stringNames.get(i),RANDOM.nextInt(10000)));
+            users.add(new User(i,stringNames.get(i),RANDOM.nextInt(MAX_BALANCE)));
         }
         createUsers(users);
         return users;
