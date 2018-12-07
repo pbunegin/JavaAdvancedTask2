@@ -23,7 +23,7 @@ public class Transaction implements Runnable {
     public void run() {
         while (service.getCountTransaction() < maxNumberTransactions) {
             getUsersAndSum();
-            if (transferFromUser == null || transferToUser == null) {
+            if (!checkUsers()){
                 service.decrementCountTransaction();
                 continue;
             }
@@ -49,14 +49,21 @@ public class Transaction implements Runnable {
         }
     }
 
-    private boolean checkTransaction() {
-        if (transferFromUser.getBalance() - sum < 0) {
-            LOGGER.warn("Недостаточно средств на счете {} пользователя {}", transferFromUser.getId(), transferFromUser.getName());
+    private boolean checkUsers() {
+        if (transferFromUser == null || transferToUser == null) {
             return false;
         }
         if (transferFromUser.getId() == transferToUser.getId()) {
             LOGGER.warn("Невозможно выполнить перевод самому себе. Счет {}, пользователь {}",
                     transferFromUser.getId(), transferFromUser.getName());
+            return false;
+        }
+        return true;
+    }
+
+    private boolean checkTransaction() {
+        if (transferFromUser.getBalance() - sum < 0) {
+            LOGGER.warn("Недостаточно средств на счете {} пользователя {}", transferFromUser.getId(), transferFromUser.getName());
             return false;
         }
         return true;
